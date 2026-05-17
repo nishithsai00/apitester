@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Insights</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: #f4f4f4;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #4CAF50;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background: #f1f1f1;
+        }
+
+        .slow {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h1>API Insights Dashboard</h1>
+<table>
+    <thead>
+    <tr>
+        <th>Endpoint</th>
+        <th>Total Calls</th>
+        <th>Avg Duration</th>
+        <th>Slowest</th>
+    </tr>
+    </thead>
+    <tbody id="tableBody">
+    <!-- data gets injected here by JavaScript -->
+    </tbody>
+</table>
+
+<script>
+    async function loadData() {
+
+        // ── Summary table ──────────────────────────────
+        const summaryRes = await fetch('/insights/summary');
+        const summary = await summaryRes.json();
+        const tableBody = document.getElementById('tableBody');
+
+        Object.entries(summary).forEach(([endpoint, stats]) => {
+            const avgMs = parseInt(stats.Average);
+            const isSlow = avgMs > 500;
+
+            const row = `
+                <tr>
+                    <td>${endpoint}</td>
+                    <td>${stats.Count}</td>
+                    <td class="${isSlow ? 'slow' : ''}">${stats.Average}</td>
+                    <td class="${isSlow ? 'slow' : ''}">${stats.Slowest}</td>
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
+
+        // ── Logs table ─────────────────────────────────
+        const logsRes = await fetch('/insights');
+        const logs = await logsRes.json();
+        const logsBody = document.getElementById('logsBody');
+
+        // show latest logs first
+        logs.reverse().forEach(log => {
+
+            // convert timestamp to readable time
+            const time = new Date(log.timeStamp).toLocaleTimeString();
+
+            const row = `
+                <tr>
+                    <td>${log.api}</td>
+                    <td>${log.method}</td>
+                    <td>${log.statusCode}</td>
+                    <td>${log.duration}ms</td>
+                    <td>${time}</td>
+                </tr>
+            `;
+            logsBody.innerHTML += row;
+        });
+    }
+
+    loadData();
+</script>
+<h2 style="margin-top: 40px; color: #333;">Recent API Logs</h2>
+<table id="logsTable">
+    <thead>
+    <tr>
+        <th>Endpoint</th>
+        <th>Method</th>
+        <th>Status</th>
+        <th>Duration</th>
+        <th>Time</th>
+    </tr>
+    </thead>
+    <tbody id="logsBody">
+    </tbody>
+</table>
+</body>
+</html>
