@@ -1,7 +1,6 @@
 package com.springboot.insights.controller;
 
 import com.springboot.insights.model.ApiLog;
-import com.springboot.insights.tracker.QueryCountHolder;
 import com.springboot.insights.service.LogStore;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
