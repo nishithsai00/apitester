@@ -1,4 +1,4 @@
-package com.api.tester.model;
+package com.springboot.insights.model;
 
 public class ApiLog {
     private String api;
@@ -7,6 +7,24 @@ public class ApiLog {
     private long duration;
     private int statusCode;
     private long timestamp;
+    private int queryCount;
+    private boolean suspectedN1;
+
+    public boolean isSuspectedN1() {
+        return suspectedN1;
+    }
+
+    public void setSuspectedN1(boolean suspectedN1) {
+        this.suspectedN1 = suspectedN1;
+    }
+
+    public int getQueryCount() {
+        return queryCount;
+    }
+
+    public void setQueryCount(int queryCount) {
+        this.queryCount = queryCount;
+    }
 
     public int getStatusCode() {
         return statusCode;

@@ -1,13 +1,12 @@
-package com.api.tester.service;
+package com.springboot.insights.service;
 
-import com.api.tester.model.ApiLog;
+import com.springboot.insights.model.ApiLog;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Component
@@ -20,6 +19,9 @@ public class LogStore {
      }
      public List<ApiLog> getlogs(){
          return logs;
+     }
+     public void clear(){
+         logs.clear();
      }
 public Map<String,Object> insights(){
          Map<String ,List<ApiLog>> endPoints=logs.stream()
@@ -34,10 +36,18 @@ public Map<String,Object> insights(){
                      .mapToLong(ApiLog::getDuration)
                      .max()
                      .orElse(0);
+             long queriesFired=(long)calls.stream()
+                     .mapToLong(ApiLog::getQueryCount)
+                     .sum();
+             long n1Count=calls.stream()
+                     .filter(ApiLog::isSuspectedN1)
+                     .count();
              Map<String,Object> result=new LinkedHashMap<>();
              result.put("Count",calls.size());
              result.put("Slowest",slowest+"ms");
              result.put("Average",avg+"ms");
+             result.put("QueriesFired",queriesFired);
+             result.put("isN+1 Suspected",n1Count>0?"Yes":"NO");
              stats.put(api,result);
 
     });

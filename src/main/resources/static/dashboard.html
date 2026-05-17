@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 <head>
     <title>API Insights</title>
@@ -19,6 +18,7 @@
             background: white;
             border-radius: 8px;
             overflow: hidden;
+            margin-bottom: 20px;
         }
 
         th {
@@ -45,7 +45,20 @@
 </head>
 <body>
 
-<h1>API Insights Dashboard</h1>
+<h1 style="display:inline;">API Insights Dashboard</h1>
+<button onclick="clearLogs()"
+        style="margin-left: 20px;
+                   padding: 8px 16px;
+                   background: #e53935;
+                   color: white;
+                   border: none;
+                   border-radius: 4px;
+                   cursor: pointer;
+                   font-size: 14px;">
+     Clear Logs
+</button>
+
+<h2 style="margin-top: 30px; color: #333;">Summary</h2>
 <table>
     <thead>
     <tr>
@@ -53,17 +66,34 @@
         <th>Total Calls</th>
         <th>Avg Duration</th>
         <th>Slowest</th>
+        <th>Total Queries</th>
+        <th>N+1 Suspected</th>
     </tr>
     </thead>
-    <tbody id="tableBody">
-    <!-- data gets injected here by JavaScript -->
-    </tbody>
+    <tbody id="tableBody"></tbody>
+</table>
+
+<h2 style="margin-top: 40px; color: #333;">Recent API Logs</h2>
+<table>
+    <thead>
+    <tr>
+        <th>Endpoint</th>
+        <th>Method</th>
+        <th>Status</th>
+        <th>Duration</th>
+        <th>Queries</th>
+        <th>N+1</th>
+        <th>Time</th>
+    </tr>
+    </thead>
+    <tbody id="logsBody"></tbody>
 </table>
 
 <script>
     async function loadData() {
+        document.getElementById('tableBody').innerHTML = '';
+        document.getElementById('logsBody').innerHTML = '';
 
-        // ── Summary table ──────────────────────────────
         const summaryRes = await fetch('/insights/summary');
         const summary = await summaryRes.json();
         const tableBody = document.getElementById('tableBody');
@@ -78,20 +108,18 @@
                     <td>${stats.Count}</td>
                     <td class="${isSlow ? 'slow' : ''}">${stats.Average}</td>
                     <td class="${isSlow ? 'slow' : ''}">${stats.Slowest}</td>
+                    <td>${stats.QueriesFired}</td>
+                    <td>${stats["isN+1 Suspected"]}</td>
                 </tr>
             `;
             tableBody.innerHTML += row;
         });
 
-        // ── Logs table ─────────────────────────────────
         const logsRes = await fetch('/insights');
         const logs = await logsRes.json();
         const logsBody = document.getElementById('logsBody');
 
-        // show latest logs first
         logs.reverse().forEach(log => {
-
-            // convert timestamp to readable time
             const time = new Date(log.timeStamp).toLocaleTimeString();
 
             const row = `
@@ -100,6 +128,8 @@
                     <td>${log.method}</td>
                     <td>${log.statusCode}</td>
                     <td>${log.duration}ms</td>
+                    <td>${log.queryCount}</td>
+                    <td>${log.suspectedN1 ? "YES" : "NO"}</td>
                     <td>${time}</td>
                 </tr>
             `;
@@ -107,21 +137,15 @@
         });
     }
 
+    async function clearLogs() {
+        await fetch('/insights/clear', { method: 'DELETE' });
+        loadData();
+    }
+
     loadData();
+
+    setInterval(loadData, 5000);
 </script>
-<h2 style="margin-top: 40px; color: #333;">Recent API Logs</h2>
-<table id="logsTable">
-    <thead>
-    <tr>
-        <th>Endpoint</th>
-        <th>Method</th>
-        <th>Status</th>
-        <th>Duration</th>
-        <th>Time</th>
-    </tr>
-    </thead>
-    <tbody id="logsBody">
-    </tbody>
-</table>
+
 </body>
 </html>
