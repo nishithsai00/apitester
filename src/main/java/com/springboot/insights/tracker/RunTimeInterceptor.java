@@ -5,13 +5,22 @@ import com.springboot.insights.model.ApiLog;
 import com.springboot.insights.service.LogStore;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
 public class RunTimeInterceptor implements HandlerInterceptor {
+
+    private static int suspectedQueryCountForN1=10;
+
+    public int getSuspectedQueryCountForN1() {
+        return suspectedQueryCountForN1;
+    }
+
+    public static void  setSuspectedQueryCountForN1(int num) {
+        suspectedQueryCountForN1 = num;
+    }
 
     LogStore logStore;
     public RunTimeInterceptor(LogStore logStore){
@@ -42,7 +51,7 @@ public class RunTimeInterceptor implements HandlerInterceptor {
                log.setTimeStamp(System.currentTimeMillis());
                log.setStatusCode(response.getStatus());
              log.setQueryCount(QueryCountHolder.getCount());
-             log.setSuspectedN1(QueryCountHolder.getCount()>10);
+             log.setSuspectedN1(QueryCountHolder.getCount()>suspectedQueryCountForN1);
              logStore.save(log);
 
     }

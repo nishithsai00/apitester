@@ -2,6 +2,7 @@ package com.springboot.insights.controller;
 
 import com.springboot.insights.model.ApiLog;
 import com.springboot.insights.service.LogStore;
+import com.springboot.insights.tracker.RunTimeInterceptor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,7 +22,6 @@ public Insights_Controller(LogStore logStore){
 
     @RequestMapping("/insights")
 public List<ApiLog> insights() throws Exception{
-
     return logStore.getlogs();
 }
 @RequestMapping("/insights/summary")
@@ -32,5 +32,4 @@ public List<ApiLog> insights() throws Exception{
 public void clear(){
     logStore.clear();
 }
-
 }
