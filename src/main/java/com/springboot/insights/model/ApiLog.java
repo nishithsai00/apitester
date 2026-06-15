@@ -9,6 +9,15 @@ public class ApiLog {
     private long timestamp;
     private int queryCount;
     private boolean suspectedN1;
+    private boolean performanceWarning;
+
+    public boolean isPerformanceWarning() {
+        return performanceWarning;
+    }
+
+    public void setPerformanceWarning(boolean performanceWarning) {
+        this.performanceWarning = performanceWarning;
+    }
 
     public boolean isSuspectedN1() {
         return suspectedN1;

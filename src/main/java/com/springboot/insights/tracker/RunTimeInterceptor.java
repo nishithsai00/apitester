@@ -9,17 +9,29 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
 public class RunTimeInterceptor implements HandlerInterceptor {
 
-    private static int suspectedQueryCountForN1=10;
+    private static int performanceWarning=10;
+private static  int nPlusOneSuspected=3;
 
-    public int getSuspectedQueryCountForN1() {
-        return suspectedQueryCountForN1;
+    public static int getnPlusOneSuspected() {
+        return nPlusOneSuspected;
     }
 
-    public static void  setSuspectedQueryCountForN1(int num) {
-        suspectedQueryCountForN1 = num;
+    public static void setnPlusOneSuspected(int nPlusOneSuspected) {
+        RunTimeInterceptor.nPlusOneSuspected = nPlusOneSuspected;
+    }
+
+    public static int getPerformanceWarningLimit() {
+        return performanceWarning;
+    }
+
+    public static void  setPerformanceWarningLimit(int num) {
+        performanceWarning = num;
     }
 
     LogStore logStore;
@@ -33,7 +45,11 @@ public class RunTimeInterceptor implements HandlerInterceptor {
              return true;
          }
          request.setAttribute("starttime",System.currentTimeMillis());
-         QueryCountHolder.resetCount();
+        QueryCountHolder.resetCount();
+         if(!(QueryCountHolder.getQueryList().isEmpty())){
+             QueryCountHolder.clearQueryList();
+        }
+
          return true;
     }
 
@@ -41,6 +57,23 @@ public class RunTimeInterceptor implements HandlerInterceptor {
          String url =request.getRequestURI();
         if(url.equals("/dashboard.html")||url.equals("/insights")||url.equals("/insights/summary")||url.equals("/insights/clear")){
             return;
+        }
+        Map<String,Integer> summary=new HashMap<>();
+        for(String query :QueryCountHolder.getQueryList()){  // used to combine the same queries like n+1 queries together
+            if(summary.containsKey(query)){
+                summary.put(query,summary.get(query)+1);
+            }
+            else{
+                summary.put(query,1);
+            }
+        }
+
+      Map<String,Integer> nPlusOne=new HashMap<>();
+        for(Map.Entry<String,Integer> entry:summary.entrySet()){ // it will count how many sus queries in the before map
+           if(entry.getValue()>=nPlusOneSuspected){
+               nPlusOne.put(entry.getKey(),entry.getValue());
+           }
+
         }
          long startTime=(long)request.getAttribute("starttime");
          long duration=System.currentTimeMillis()-startTime;
@@ -51,7 +84,8 @@ public class RunTimeInterceptor implements HandlerInterceptor {
                log.setTimeStamp(System.currentTimeMillis());
                log.setStatusCode(response.getStatus());
              log.setQueryCount(QueryCountHolder.getCount());
-             log.setSuspectedN1(QueryCountHolder.getCount()>suspectedQueryCountForN1);
+             log.setPerformanceWarning(QueryCountHolder.getCount()>performanceWarning);
+             log.setSuspectedN1(!nPlusOne.isEmpty());
              logStore.save(log);
 
     }

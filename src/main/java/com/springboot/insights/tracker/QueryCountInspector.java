@@ -8,6 +8,7 @@ public class QueryCountInspector implements StatementInspector {
     @Override
     public String inspect(String s) {
         QueryCountHolder.addCount();
+        QueryCountHolder.addQuery(s);
         return s;
     }
 }
