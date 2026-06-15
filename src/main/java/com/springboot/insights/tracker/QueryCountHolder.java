@@ -15,6 +15,13 @@ public class QueryCountHolder {
     public static void resetCount(){
         queryCount.set(0);
     }
+    public static void clearQueryCount(){
+        queryCount.remove();
+    }
+    public static void clearAllQueries(){
+        queryCount.remove();
+        queries.remove();
+    }
     private static final ThreadLocal<List<String>> queries=ThreadLocal.withInitial(ArrayList::new);
     public static void addQuery(String query){
         queries.get().add(query);

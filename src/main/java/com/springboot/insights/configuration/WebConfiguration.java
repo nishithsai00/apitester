@@ -4,7 +4,9 @@ import com.springboot.insights.controller.Insights_Controller;
 import com.springboot.insights.service.LogStore;
 import com.springboot.insights.tracker.QueryCountInspector;
 import com.springboot.insights.tracker.RunTimeInterceptor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -12,6 +14,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @ConditionalOnWebApplication
+@ConditionalOnProperty(name="insights.enabled" ,havingValue = "true",matchIfMissing = true)
 public class WebConfiguration implements WebMvcConfigurer {
     @Bean
     public LogStore logStore() {
@@ -37,6 +40,9 @@ public class WebConfiguration implements WebMvcConfigurer {
         registry.addInterceptor(runTimeInterceptor())
                 .addPathPatterns("/**");
     }
-
+    @Bean
+    public HibernatePropertiesCustomizer hibernatePropertiesCustomizer(QueryCountInspector queryCountInspector) {
+        return props -> props.put("hibernate.session_factory.statement_inspector", queryCountInspector);
+    }
 
 }

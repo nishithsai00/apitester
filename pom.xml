@@ -11,7 +11,7 @@
 
     <groupId>io.github.nishithsai00</groupId>
     <artifactId>spring-boot-insights</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
     <name>spring-boot-insights</name>
     <description>Zero-config API monitoring library for Spring Boot 3.x</description>

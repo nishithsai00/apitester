@@ -15,28 +15,28 @@ import java.util.Map;
 @Component
 public class RunTimeInterceptor implements HandlerInterceptor {
 
-    private static int performanceWarning=10;
-private static  int nPlusOneSuspected=3;
+    private static int performanceWarning=10; // by default the performance metric is 10
+private static  int nPlusOneSuspected=3; //by default the n+1 querie count is three
 
     public static int getnPlusOneSuspected() {
-        return nPlusOneSuspected;
+        return nPlusOneSuspected;  // to get the default metrics
     }
 
     public static void setnPlusOneSuspected(int nPlusOneSuspected) {
-        RunTimeInterceptor.nPlusOneSuspected = nPlusOneSuspected;
+        RunTimeInterceptor.nPlusOneSuspected = nPlusOneSuspected;  // to change the default metrics to user specific number
     }
 
     public static int getPerformanceWarningLimit() {
-        return performanceWarning;
+        return performanceWarning;// to get the default metrics
     }
 
     public static void  setPerformanceWarningLimit(int num) {
-        performanceWarning = num;
+        performanceWarning = num;  // to change the default metrics to user specific number
     }
 
     LogStore logStore;
     public RunTimeInterceptor(LogStore logStore){
-        this.logStore=logStore;
+        this.logStore=logStore;   // depedency injection
     }
 
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -45,16 +45,15 @@ private static  int nPlusOneSuspected=3;
              return true;
          }
          request.setAttribute("starttime",System.currentTimeMillis());
-        QueryCountHolder.resetCount();
-         if(!(QueryCountHolder.getQueryList().isEmpty())){
-             QueryCountHolder.clearQueryList();
-        }
+        QueryCountHolder.resetCount();     // this method runs before the request actually hit the controller
+
 
          return true;
     }
 
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable Exception ex) throws Exception {
-         String url =request.getRequestURI();
+         String url =request.getRequestURI();     // this method runs the request work done  even if the request succed or fails
+                                                  // it even works with the exception
         if(url.equals("/dashboard.html")||url.equals("/insights")||url.equals("/insights/summary")||url.equals("/insights/clear")){
             return;
         }
@@ -87,6 +86,7 @@ private static  int nPlusOneSuspected=3;
              log.setPerformanceWarning(QueryCountHolder.getCount()>performanceWarning);
              log.setSuspectedN1(!nPlusOne.isEmpty());
              logStore.save(log);
+             QueryCountHolder.clearAllQueries();
 
     }
 }
